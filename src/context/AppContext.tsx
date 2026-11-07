@@ -262,19 +262,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const loginAdmin = (email: string, pass: string): boolean => {
-    const configuredEmail = (import.meta.env.VITE_ADMIN_EMAIL || 'admin@appnova.io').trim().toLowerCase();
-    const configuredPassword = (import.meta.env.VITE_ADMIN_PASSWORD || 'admin123').trim();
+    const configuredEmail = (import.meta.env.VITE_ADMIN_EMAIL || 'jenilchauhan2007@gmail.com').trim().toLowerCase();
+    const configuredPassword = (import.meta.env.VITE_ADMIN_PASSWORD || 'Riya@9008').trim();
 
     const inputEmail = email.trim().toLowerCase();
     const inputPass = pass.trim();
 
-    if (
-      (inputEmail === configuredEmail && inputPass === configuredPassword) ||
-      (inputEmail === 'admin@gmail.com' && inputPass === configuredPassword)
-    ) {
+    if (inputEmail === configuredEmail && inputPass === configuredPassword) {
       const user: AdminUser = {
         email: inputEmail,
-        name: 'AppNova Administrator',
+        name: 'Jenil Chauhan',
         role: 'superadmin',
       };
       setAdminUser(user);
