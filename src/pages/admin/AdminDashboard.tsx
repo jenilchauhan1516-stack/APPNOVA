@@ -90,7 +90,7 @@ export const AdminDashboard: React.FC = () => {
               </span>
             </div>
             <p className="text-xs text-appText-secondary dark:text-appText-darkSecondary mt-0.5">
-              Signed in as <span className="font-semibold text-slate-800 dark:text-slate-200">{adminUser?.email || 'jenilchauhan2007@gmail.com'}</span>
+              Signed in as <span className="font-semibold text-slate-800 dark:text-slate-200">{adminUser?.email || 'Administrator'}</span>
             </p>
           </div>
         </div>
