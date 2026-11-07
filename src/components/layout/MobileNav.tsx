@@ -66,21 +66,19 @@ export const MobileNav: React.FC = () => {
           <span className="text-[10px]">Categories</span>
         </NavLink>
 
-        {isAdminAuthenticated && (
-          <NavLink
-            to="/admin"
-            className={({ isActive }) =>
-              `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
-                isActive
-                  ? 'text-brand-500 font-bold'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-              }`
-            }
-          >
-            <Shield className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px]">Admin</span>
-          </NavLink>
-        )}
+        <NavLink
+          to={isAdminAuthenticated ? '/admin' : '/admin/login'}
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
+              isActive
+                ? 'text-brand-500 font-bold'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+            }`
+          }
+        >
+          <Shield className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px]">{isAdminAuthenticated ? 'Admin' : 'Login'}</span>
+        </NavLink>
       </div>
     </nav>
   );

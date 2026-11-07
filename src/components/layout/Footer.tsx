@@ -103,6 +103,11 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/admin" className="hover:text-brand-500 transition-colors">
+                  Admin Portal
+                </Link>
+              </li>
+              <li>
                 <span className="hover:text-brand-500 transition-colors cursor-pointer">
                   Developer Inquiries
                 </span>
