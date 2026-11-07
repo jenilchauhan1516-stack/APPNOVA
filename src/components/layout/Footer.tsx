@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Download, Heart, Smartphone, Lock, FileCode } from 'lucide-react';
+import { ShieldCheck, Download, Heart, Smartphone, Lock, FileCode, Shield } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
 
 export const Footer: React.FC = () => {
+  const { isAdminAuthenticated } = useApp();
+
   return (
     <footer className="w-full bg-white dark:bg-surface-dark border-t border-surface-border dark:border-surface-darkBorder pt-12 pb-24 md:pb-12 text-sm text-appText-secondary dark:text-appText-darkSecondary transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -83,32 +86,40 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Administration & Help */}
+          {/* Support & Community */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-appText-primary dark:text-appText-darkPrimary mb-3">
-              Administration
+              Support & Info
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
-                <Link to="/admin" className="hover:text-brand-500 transition-colors">
-                  Admin Portal
-                </Link>
-              </li>
-              <li>
-                <Link to="/admin/apps/new" className="hover:text-brand-500 transition-colors">
-                  Submit New App
-                </Link>
-              </li>
-              <li>
-                <a href="#about" className="hover:text-brand-500 transition-colors">
+                <Link to="/" className="hover:text-brand-500 transition-colors">
                   About AppNova
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#contact" className="hover:text-brand-500 transition-colors">
-                  Contact Support
-                </a>
+                <Link to="/categories" className="hover:text-brand-500 transition-colors">
+                  App Categories
+                </Link>
               </li>
+              <li>
+                <span className="hover:text-brand-500 transition-colors cursor-pointer">
+                  Developer Inquiries
+                </span>
+              </li>
+              <li>
+                <span className="hover:text-brand-500 transition-colors cursor-pointer">
+                  Report Broken Link
+                </span>
+              </li>
+              {isAdminAuthenticated && (
+                <li className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <Link to="/admin" className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold hover:underline">
+                    <Shield className="w-3 h-3" />
+                    <span>Admin Dashboard</span>
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
         </div>

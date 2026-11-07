@@ -140,7 +140,7 @@ export const CategoriesPage: React.FC = () => {
             </div>
           ) : (
             <p className="text-xs text-slate-500 py-6">
-              No apps currently cataloged in {activeCategory}. You can add one via the Admin Panel!
+              No apps currently cataloged in {activeCategory} yet.
             </p>
           )}
         </section>

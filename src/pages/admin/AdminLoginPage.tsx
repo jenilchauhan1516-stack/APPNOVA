@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Shield, Lock, Mail, ArrowRight, CheckCircle2, KeyRound, Sparkles } from 'lucide-react';
+import { Shield, Lock, Mail, ArrowRight } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 
@@ -31,15 +31,9 @@ export const AdminLoginPage: React.FC = () => {
       const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/admin';
       navigate(from);
     } else {
-      setErrorMsg('Invalid credentials. Use admin@appnova.io and password admin123, or click Auto-fill Demo.');
+      setErrorMsg('Invalid credentials. Please enter a valid administrator email and password.');
       showToast('Authentication failed', 'error');
     }
-  };
-
-  const handleFillDemo = () => {
-    setEmail('admin@appnova.io');
-    setPassword('admin123');
-    setErrorMsg('');
   };
 
   return (
@@ -110,25 +104,6 @@ export const AdminLoginPage: React.FC = () => {
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
-
-          {/* Quick Demo Credentials Autofill */}
-          <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800">
-            <div className="flex items-center justify-between text-xs mb-2">
-              <span className="font-semibold text-slate-600 dark:text-slate-400">Demo Testing Mode:</span>
-              <button
-                type="button"
-                onClick={handleFillDemo}
-                className="inline-flex items-center gap-1 font-bold text-brand-600 dark:text-brand-400 hover:underline"
-              >
-                <KeyRound className="w-3 h-3" />
-                Fill Demo Credentials
-              </button>
-            </div>
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 font-mono text-[11px] text-slate-500 dark:text-slate-400 space-y-0.5">
-              <p>Email: <span className="text-slate-800 dark:text-slate-200">admin@appnova.io</span></p>
-              <p>Password: <span className="text-slate-800 dark:text-slate-200">admin123</span></p>
-            </div>
-          </div>
         </div>
 
         {/* Backend notice */}

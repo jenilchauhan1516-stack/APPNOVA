@@ -262,22 +262,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const loginAdmin = (email: string, pass: string): boolean => {
-    // Default admin demo credentials: admin@appnova.io / admin123
-    // or any standard email format for demo flexibility
-    if ((email.trim().toLowerCase() === 'admin@appnova.io' || email.trim().toLowerCase() === 'admin@gmail.com') && pass === 'admin123') {
+    const configuredEmail = (import.meta.env.VITE_ADMIN_EMAIL || 'admin@appnova.io').trim().toLowerCase();
+    const configuredPassword = (import.meta.env.VITE_ADMIN_PASSWORD || 'admin123').trim();
+
+    const inputEmail = email.trim().toLowerCase();
+    const inputPass = pass.trim();
+
+    if (
+      (inputEmail === configuredEmail && inputPass === configuredPassword) ||
+      (inputEmail === 'admin@gmail.com' && inputPass === configuredPassword)
+    ) {
       const user: AdminUser = {
-        email: email.trim().toLowerCase(),
+        email: inputEmail,
         name: 'AppNova Administrator',
-        role: 'superadmin',
-      };
-      setAdminUser(user);
-      return true;
-    }
-    // Simple demo validation: accept any email with password 'admin123'
-    if (email.includes('@') && pass === 'admin123') {
-      const user: AdminUser = {
-        email: email.trim(),
-        name: email.split('@')[0],
         role: 'superadmin',
       };
       setAdminUser(user);
