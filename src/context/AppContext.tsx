@@ -17,9 +17,9 @@ interface AppContextType {
   setSearchQuery: (query: string) => void;
   // App operations
   getAppById: (id: string) => AppItem | undefined;
-  addApp: (app: AppItem) => void;
-  updateApp: (id: string, updated: Partial<AppItem>) => void;
-  deleteApp: (id: string) => void;
+  addApp: (app: AppItem) => Promise<boolean>;
+  updateApp: (id: string, updated: Partial<AppItem>) => Promise<boolean>;
+  deleteApp: (id: string) => Promise<boolean>;
   toggleFeatured: (id: string) => void;
   toggleTrending: (id: string) => void;
   recordDownload: (appId: string) => void;
@@ -106,9 +106,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       fetchAppsFromSupabase()
         .then((cloudApps) => {
           if (cloudApps && cloudApps.length > 0) {
-            setApps(cloudApps);
+            setApps((prevApps) => {
+              const cloudIds = new Set(cloudApps.map((a) => a.id));
+              const localRemaining = prevApps.filter((a) => !cloudIds.has(a.id));
+              return [...cloudApps, ...localRemaining];
+            });
           }
         })
+        .catch((err) => console.error('Supabase fetch error:', err))
         .finally(() => setIsLoading(false));
     }
   }, []);
@@ -165,33 +170,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return apps.find((app) => app.id === id);
   };
 
-  const addApp = (newApp: AppItem) => {
-    setApps((prev) => [newApp, ...prev]);
+  const addApp = async (newApp: AppItem): Promise<boolean> => {
+    setApps((prev) => [newApp, ...prev.filter((a) => a.id !== newApp.id)]);
     if (isSupabaseConfigured) {
-      upsertAppToSupabase(newApp);
+      return await upsertAppToSupabase(newApp);
     }
+    return true;
   };
 
-  const updateApp = (id: string, updatedFields: Partial<AppItem>) => {
+  const updateApp = async (id: string, updatedFields: Partial<AppItem>): Promise<boolean> => {
+    let targetApp: AppItem | undefined;
     setApps((prev) =>
       prev.map((app) => {
         if (app.id === id) {
-          const updated = { ...app, ...updatedFields };
-          if (isSupabaseConfigured) {
-            upsertAppToSupabase(updated);
-          }
-          return updated;
+          targetApp = { ...app, ...updatedFields };
+          return targetApp;
         }
         return app;
       })
     );
+    if (isSupabaseConfigured && targetApp) {
+      return await upsertAppToSupabase(targetApp);
+    }
+    return true;
   };
 
-  const deleteApp = (id: string) => {
+  const deleteApp = async (id: string): Promise<boolean> => {
     setApps((prev) => prev.filter((app) => app.id !== id));
     if (isSupabaseConfigured) {
-      deleteAppFromSupabase(id);
+      return await deleteAppFromSupabase(id);
     }
+    return true;
   };
 
   const toggleFeatured = (id: string) => {

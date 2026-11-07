@@ -100,16 +100,38 @@ export const AdminAppForm: React.FC = () => {
     }
   }, [isEditMode, existingApp]);
 
-  // Handle Icon File Upload
+  // Handle Icon File Upload with Auto-Optimization
   const handleIconFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const img = new window.Image();
       const reader = new FileReader();
       reader.onload = (event) => {
-        if (event.target?.result) {
-          setIcon(event.target.result as string);
-          showToast('App icon uploaded successfully', 'success');
-        }
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_SIZE = 256;
+          let w = img.width;
+          let h = img.height;
+          if (w > h) {
+            if (w > MAX_SIZE) {
+              h = Math.round((h * MAX_SIZE) / w);
+              w = MAX_SIZE;
+            }
+          } else {
+            if (h > MAX_SIZE) {
+              w = Math.round((w * MAX_SIZE) / h);
+              h = MAX_SIZE;
+            }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, w, h);
+          const compressed = canvas.toDataURL('image/jpeg', 0.85);
+          setIcon(compressed);
+          showToast('App icon uploaded & optimized', 'success');
+        };
       };
       reader.readAsDataURL(file);
     }
@@ -119,31 +141,61 @@ export const AdminAppForm: React.FC = () => {
   const handleBannerFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const img = new window.Image();
       const reader = new FileReader();
       reader.onload = (event) => {
-        if (event.target?.result) {
-          setBanner(event.target.result as string);
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_W = 800;
+          let w = img.width;
+          let h = img.height;
+          if (w > MAX_W) {
+            h = Math.round((h * MAX_W) / w);
+            w = MAX_W;
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, w, h);
+          const compressed = canvas.toDataURL('image/jpeg', 0.8);
+          setBanner(compressed);
           showToast('App banner uploaded', 'success');
-        }
+        };
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Handle Screenshot Upload
+  // Handle Screenshot Upload with Auto-Optimization
   const handleScreenshotFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       Array.from(files).forEach((file) => {
+        const img = new window.Image();
         const reader = new FileReader();
         reader.onload = (event) => {
-          if (event.target?.result) {
-            setScreenshots((prev) => [...prev, event.target!.result as string]);
-          }
+          img.src = event.target?.result as string;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_W = 600;
+            let w = img.width;
+            let h = img.height;
+            if (w > MAX_W) {
+              h = Math.round((h * MAX_W) / w);
+              w = MAX_W;
+            }
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0, w, h);
+            const compressed = canvas.toDataURL('image/jpeg', 0.8);
+            setScreenshots((prev) => [...prev, compressed]);
+          };
         };
         reader.readAsDataURL(file);
       });
-      showToast(`Added ${files.length} screenshot(s)`, 'success');
+      showToast(`Added and optimized ${files.length} screenshot(s)`, 'success');
     }
   };
 
@@ -201,7 +253,9 @@ export const AdminAppForm: React.FC = () => {
     customApkFileName,
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!name.trim() || !developer.trim() || !icon.trim()) {
@@ -209,20 +263,38 @@ export const AdminAppForm: React.FC = () => {
       return;
     }
 
-    if (isEditMode && existingApp) {
-      updateApp(existingApp.id, draftApp);
-      showToast(`Updated "${draftApp.name}" successfully`, 'success');
-    } else {
-      // Check ID uniqueness
-      let newId = draftApp.id;
-      if (apps.some((a) => a.id === newId)) {
-        newId = `${newId}-${Date.now().toString(36)}`;
-      }
-      addApp({ ...draftApp, id: newId });
-      showToast(`Published "${draftApp.name}" to AppNova store!`, 'success');
-    }
+    setIsSubmitting(true);
+    try {
+      const cleanSlug = name
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      const uniqueId = isEditMode && existingApp
+        ? existingApp.id
+        : (cleanSlug || 'app') + '-' + Date.now().toString(36);
 
-    navigate('/admin');
+      const finalApp: AppItem = {
+        ...draftApp,
+        id: uniqueId,
+        packageName: packageName.trim() || `com.appnova.${uniqueId.replace(/[^a-z0-9]/g, '')}`,
+      };
+
+      if (isEditMode && existingApp) {
+        await updateApp(existingApp.id, finalApp);
+        showToast(`Updated "${finalApp.name}" successfully!`, 'success');
+      } else {
+        await addApp(finalApp);
+        showToast(`Published "${finalApp.name}" to AppNova store!`, 'success');
+      }
+
+      navigate('/admin');
+    } catch (err) {
+      console.error('Failed to save app:', err);
+      showToast('Error saving app. Please try again.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -699,9 +771,10 @@ export const AdminAppForm: React.FC = () => {
           </Link>
           <button
             type="submit"
-            className="px-8 py-3 rounded-full bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-brand-500/25 transition-all hover:scale-[1.01]"
+            disabled={isSubmitting}
+            className="px-8 py-3 rounded-full bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-brand-500/25 transition-all hover:scale-[1.01] disabled:opacity-50"
           >
-            {isEditMode ? 'Update Application' : 'Publish to Store'}
+            {isSubmitting ? 'Saving to Database...' : isEditMode ? 'Update Application' : 'Publish to Store'}
           </button>
         </div>
       </form>
